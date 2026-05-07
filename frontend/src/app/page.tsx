@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { apiFetch } from '../lib/api';
 
 interface User {
   id: number;
@@ -41,12 +42,9 @@ export default function Home() {
     try {
       const refreshToken = localStorage.getItem('refresh_token');
       if (refreshToken) {
-        await fetch('http://localhost:8000/api/accounts/auth/logout/', {
+        await apiFetch('/api/accounts/auth/logout/', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ refresh_token: refreshToken }),
+          body: { refresh_token: refreshToken },
         });
       }
     } catch (e) {

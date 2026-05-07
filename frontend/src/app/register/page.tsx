@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { apiFetch } from '../../lib/api';
 
 interface FormData {
   nin: string;
@@ -94,7 +95,7 @@ export default function Register() {
     // Fetch LGAs for the selected business state from backend API, fallback to local map
     const stateCode = formData.business_state;
     setLgasLoading(true);
-    fetch(`http://localhost:8000/api/accounts/locations/lgas/?state=${stateCode}`)
+    apiFetch(`/api/accounts/locations/lgas/?state=${stateCode}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
@@ -136,16 +137,13 @@ export default function Register() {
     setMessage('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/accounts/taxpayers/register/', {
+      const response = await apiFetch('/api/accounts/taxpayers/register/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
+        body: {
           ...formData,
           monthly_income: parseFloat(formData.monthly_income),
           deduction_day: parseInt(formData.deduction_day as any, 10),
-        }),
+        },
       });
 
       const data = await response.json();

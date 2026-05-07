@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiFetch } from '../../lib/api';
 
 interface LoginData {
   email: string;
@@ -65,10 +66,9 @@ export default function Login() {
     // Try sending to server endpoint; fall back to showing contact info
     try {
       const payload = { email: formData.email || '', message: text };
-      const res = await fetch('http://localhost:8000/api/notifications/support/', {
+      const res = await apiFetch('/api/notifications/support/', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
+        body: payload,
       });
 
       if (res.ok) {
@@ -97,12 +97,9 @@ export default function Login() {
     setMessage('');
 
     try {
-      const response = await fetch('http://localhost:8000/api/accounts/auth/login/', {
+      const response = await apiFetch('/api/accounts/auth/login/', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(formData),
+        body: formData,
       });
 
       const data = await response.json();

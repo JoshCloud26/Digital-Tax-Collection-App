@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import { apiFetch } from '../../lib/api';
 
 interface User {
   id: number;
@@ -129,7 +130,7 @@ export default function TaxpayerDashboard() {
       return;
     }
     setEditLgasLoading(true);
-    fetch(`http://localhost:8000/api/accounts/locations/lgas/?state=${stateCode}`)
+    apiFetch(`/api/accounts/locations/lgas/?state=${stateCode}`)
       .then((res) => {
         if (!res.ok) throw new Error('Failed to fetch');
         return res.json();
@@ -151,13 +152,12 @@ export default function TaxpayerDashboard() {
     }
 
     try {
-      const resp = await fetch(`http://localhost:8000/api/accounts/taxpayers/${editForm.id}/`, {
+      const resp = await apiFetch(`/api/accounts/taxpayers/${editForm.id}/`, {
         method: 'PATCH',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${accessToken}`,
         },
-        body: JSON.stringify(editForm),
+        body: editForm,
       });
 
       if (resp.ok) {
@@ -190,7 +190,7 @@ export default function TaxpayerDashboard() {
       setUser(parsedUser);
 
       // Load taxpayer profile
-      const profileResponse = await fetch('http://localhost:8000/api/accounts/taxpayers/', {
+      const profileResponse = await apiFetch('/api/accounts/taxpayers/', {
         headers: {
           'Authorization': `Bearer ${accessToken}`,
         },
@@ -213,7 +213,7 @@ export default function TaxpayerDashboard() {
 
       // Load transactions if we have taxpayer data
       if (parsedUser.email) {
-        const transactionsResponse = await fetch(`http://localhost:8000/api/payments/transactions/by_taxpayer/?taxpayer_id=${parsedUser.email}`, {
+        const transactionsResponse = await apiFetch(`/api/payments/transactions/by_taxpayer/?taxpayer_id=${parsedUser.email}`, {
           headers: {
             'Authorization': `Bearer ${accessToken}`,
           },
@@ -241,13 +241,12 @@ export default function TaxpayerDashboard() {
     const refreshToken = localStorage.getItem('refresh_token');
 
     try {
-      await fetch('http://localhost:8000/api/accounts/auth/logout/', {
+      await apiFetch('/api/accounts/auth/logout/', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('access_token')}`,
         },
-        body: JSON.stringify({ refresh_token: refreshToken }),
+        body: { refresh_token: refreshToken },
       });
     } catch (error) {
       console.error('Logout error:', error);

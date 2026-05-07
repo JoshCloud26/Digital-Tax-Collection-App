@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { apiFetch } from '../../lib/api';
 
 interface DashboardData {
   total_taxpayers: number;
@@ -117,10 +118,10 @@ export default function Dashboard() {
       const qs = params.toString() ? `?${params.toString()}` : '';
 
       const [summaryRes, sectorsRes, locationsRes, transactionsRes] = await Promise.all([
-        fetch(`http://localhost:8000/api/dashboard/dashboard/${qs}`),
-        fetch(`http://localhost:8000/api/dashboard/dashboard/sectors/${qs}`),
-        fetch(`http://localhost:8000/api/dashboard/dashboard/locations/${qs}`),
-        fetch(`http://localhost:8000/api/dashboard/dashboard/transactions/${qs}`),
+        apiFetch(`/api/dashboard/dashboard/${qs}`),
+        apiFetch(`/api/dashboard/dashboard/sectors/${qs}`),
+        apiFetch(`/api/dashboard/dashboard/locations/${qs}`),
+        apiFetch(`/api/dashboard/dashboard/transactions/${qs}`),
       ]);
 
       const summary = await summaryRes.json();
@@ -147,7 +148,7 @@ export default function Dashboard() {
       if (filter.location && filter.location !== 'all') params.append('location', filter.location);
       if (selectedState && selectedState !== 'all') params.append('state', selectedState);
 
-      const response = await fetch(`http://localhost:8000/api/accounts/dashboard/?${params}`);
+      const response = await apiFetch(`/api/accounts/dashboard/?${params}`);
       const data = await response.json();
       const list = data && typeof data === 'object' && 'results' in data ? data.results : data;
       setTaxpayerDetails(Array.isArray(list) ? list : []);
@@ -163,7 +164,7 @@ export default function Dashboard() {
       const params = new URLSearchParams();
       if (status) params.append('status', status);
       if (selectedState && selectedState !== 'all') params.append('state', selectedState);
-      const res = await fetch(`http://localhost:8000/api/payments/deductions/?${params}`);
+      const res = await apiFetch(`/api/payments/deductions/?${params}`);
       const data = await res.json();
       const list = data && typeof data === 'object' && 'results' in data ? data.results : data;
       setDeductions(Array.isArray(list) ? list : []);
@@ -214,7 +215,7 @@ export default function Dashboard() {
       const params = new URLSearchParams();
       params.append('page_size', '100');
       if (selectedState && selectedState !== 'all') params.append('state', selectedState);
-      const res = await fetch(`http://localhost:8000/api/accounts/dashboard/?${params}`);
+      const res = await apiFetch(`/api/accounts/dashboard/?${params}`);
       const data = await res.json();
       const list = data && typeof data === 'object' && 'results' in data ? data.results : data;
       const arr = Array.isArray(list) ? list : [];
