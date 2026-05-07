@@ -1,7 +1,16 @@
 export const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000';
 
+const IS_CLIENT = typeof window !== 'undefined';
+const IS_PROD = process.env.NODE_ENV === 'production';
+let warnedMissingApiUrl = false;
+
 export async function apiFetch(input: RequestInfo | string, init?: Omit<RequestInit, 'body'> & { body?: any }): Promise<Response> {
   let url: RequestInfo = input;
+  // If running in production on a host that is not localhost, warn if API_BASE still points to localhost
+  if (IS_CLIENT && IS_PROD && API_BASE.includes('localhost') && !warnedMissingApiUrl) {
+    console.error('NEXT_PUBLIC_API_URL is not set. Frontend is attempting to contact http://localhost:8000 which is unreachable in production. Set NEXT_PUBLIC_API_URL in your Vercel/hosting environment to your backend API base URL (e.g., https://api.example.com).');
+    warnedMissingApiUrl = true;
+  }
 
   if (typeof input === 'string') {
     // If a relative api path is provided, prefix with API_BASE
@@ -46,6 +55,19 @@ export async function apiFetch(input: RequestInfo | string, init?: Omit<RequestI
   }
 
   const res = await fetch(url, { ...init, headers, body });
+  // Helpful runtime diagnostic: surface 404s with the attempted URL and guidance
+  try {
+    const status = (res && 'status' in res) ? (res as Response).status : undefined;
+    if (status === 404) {
+      if (typeof url === 'string') {
+        console.error(`API 404: ${url}. Check that the backend is deployed and NEXT_PUBLIC_API_URL is set correctly.`);
+      } else {
+        console.error('API 404: unknown request. Check that the backend is deployed and NEXT_PUBLIC_API_URL is set correctly.');
+      }
+    }
+  } catch (e) {
+    // ignore diagnostics errors
+  }
   return res;
 }
 
